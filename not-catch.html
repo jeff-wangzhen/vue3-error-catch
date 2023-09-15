@@ -1,10 +1,17 @@
 <script>
    window.addEventListener("unhandledrejection", (e) => {
       // why not log ?
+      console.log("addEventListener unhandledrejection", e);
+   });
+   window.addEventListener("error", (e) => {
+      // why not log ?
       console.log("addEventListener error", e);
    });
+   window.onerror = (e) => {
+      // why not log ?
+      console.log("onerror", e);
+   };
 </script>
-
 <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.js"></script>
 
 <div id="app">
@@ -25,11 +32,13 @@
       });
    };
 
-   Vue.createApp({
+   const app = Vue.createApp({
       directives: {
          "permission-or": {
             mounted(el, binding, vnode, prevVnode) {
                if (!myPermissions.includes(binding.value)) {
+                  // 移除后，其父节点为 null
+                  console.log("el.parentNode", el.parentNode);
                   // 用户是没有权限的，所以必然会执行此处
                   el.remove();
                   // 移除后，其父节点为 null
@@ -45,5 +54,14 @@
          });
          return { hasData };
       },
-   }).mount("#app");
+   });
+
+   app.config.warnHandler = (msg, instance, trace) => {
+      // `trace` 是组件层级结构的追踪
+      console.log("warnHandler", msg);
+   };
+   app.config.errorHandler = (err, vm, info) => {
+      console.log("errorHandler", err, vm, info);
+   };
+   app.mount("#app");
 </script>
