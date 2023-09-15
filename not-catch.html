@@ -1,0 +1,49 @@
+<script>
+   window.addEventListener("unhandledrejection", (e) => {
+      // why not log ?
+      console.log("addEventListener error", e);
+   });
+</script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.js"></script>
+
+<div id="app">
+   <div v-if="hasData">hasData</div>
+   <div v-else v-permission-or="['admin']">else</div>
+</div>
+
+<script>
+   const { ref, nextTick } = window.Vue;
+   // 用户的权限只有 dev
+   const myPermissions = ["dev"];
+   // mock 请求
+   const request = () => {
+      return new Promise((resolve) => {
+         setTimeout(() => {
+            resolve();
+         }, 500);
+      });
+   };
+
+   Vue.createApp({
+      directives: {
+         "permission-or": {
+            mounted(el, binding, vnode, prevVnode) {
+               if (!myPermissions.includes(binding.value)) {
+                  // 用户是没有权限的，所以必然会执行此处
+                  el.remove();
+                  // 移除后，其父节点为 null
+                  console.log("el.parentNode", el.parentNode);
+               }
+            },
+         },
+      },
+      setup() {
+         const hasData = ref(false);
+         request().then(() => {
+            hasData.value = true;
+         });
+         return { hasData };
+      },
+   }).mount("#app");
+</script>
